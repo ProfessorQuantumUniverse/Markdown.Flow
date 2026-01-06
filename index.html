@@ -1364,6 +1364,9 @@
     <input type="file" id="css-import-input" accept=".css,.txt" style="display: none;">
 
     <script>
+        // --- Configuration ---
+        const MAX_RECENT_FILES = 10;
+        
         // --- Core Elements ---
         const input = document.getElementById('markdown-input');
         const preview = document.getElementById('preview-render');
@@ -1667,9 +1670,9 @@ Made with ❤️ by MD.Flow Suite`;
                 date: new Date().toISOString()
             });
 
-            // Keep only last 10
-            if (recentFiles.length > 10) {
-                recentFiles = recentFiles.slice(0, 10);
+            // Keep only last N files
+            if (recentFiles.length > MAX_RECENT_FILES) {
+                recentFiles = recentFiles.slice(0, MAX_RECENT_FILES);
             }
 
             // Save
@@ -1863,8 +1866,17 @@ Made with ❤️ by MD.Flow Suite`;
         function syncColorFromHex(inputId) {
             const hexInput = document.getElementById(inputId + '-hex');
             const colorInput = document.getElementById(inputId);
-            if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
-                colorInput.value = hexInput.value;
+            let hex = hexInput.value.trim();
+            
+            // Support both 3-character (#RGB) and 6-character (#RRGGBB) hex codes
+            if (/^#[0-9A-F]{3}$/i.test(hex)) {
+                // Expand 3-char to 6-char format
+                hex = '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+                hexInput.value = hex;
+            }
+            
+            if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                colorInput.value = hex;
                 updateVisualStyle();
             }
         }
