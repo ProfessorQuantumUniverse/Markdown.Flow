@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MD.Flow | High-End Markdown to PDF</title>
+    <title>MD.Flow Suite | The Ultimate Markup Environment</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,29 +12,66 @@
     <!-- Icons -->
     <script src="https://unpkg.com/phosphor-icons"></script>
 
-    <!-- Libs (Marked, Highlight, HTML2PDF) -->
+    <!-- Libs -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css" id="hljs-theme">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
 
     <style>
         :root {
+            /* Core Theme Variables (Default: Cyber) */
             --bg-body: #050505;
             --bg-panel: #111111;
-            --accent: #00f2ff; /* Cyber Cyan */
-            --accent-dim: rgba(0, 242, 255, 0.1);
+            --bg-input: #0a0a0a;
             --text-main: #e0e0e0;
             --text-muted: #888888;
             --border: #333333;
-            --radius: 12px;
+            --accent: #00f2ff;
+            --accent-glow: rgba(0, 242, 255, 0.2);
+            --selection: rgba(0, 242, 255, 0.15);
+            
             --font-ui: 'Inter', sans-serif;
             --font-code: 'JetBrains Mono', monospace;
             --font-doc: 'Merriweather', serif;
+            
+            --nav-height: 60px;
+            --toolbar-height: 45px;
+            --stat-height: 30px;
+        }
+
+        /* Theme: Nord */
+        [data-theme="nord"] {
+            --bg-body: #2e3440;
+            --bg-panel: #3b4252;
+            --bg-input: #2e3440;
+            --text-main: #d8dee9;
+            --text-muted: #81a1c1;
+            --border: #4c566a;
+            --accent: #88c0d0;
+            --accent-glow: rgba(136, 192, 208, 0.2);
+            --selection: rgba(136, 192, 208, 0.15);
+        }
+
+        /* Theme: Paper */
+        [data-theme="paper"] {
+            --bg-body: #f5f5f5;
+            --bg-panel: #ffffff;
+            --bg-input: #ffffff;
+            --text-main: #2b2b2b;
+            --text-muted: #666666;
+            --border: #e0e0e0;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.1);
+            --selection: rgba(37, 99, 235, 0.1);
         }
 
         * { box-sizing: border-box; outline: none; }
-        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
         body {
             margin: 0;
             background-color: var(--bg-body);
@@ -44,415 +81,404 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* --- Header / Toolbar --- */
+        /* --- Header --- */
         header {
-            height: 60px;
+            height: var(--nav-height);
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
             border-bottom: 1px solid var(--border);
-            background: rgba(17, 17, 17, 0.8);
-            backdrop-filter: blur(10px);
+            background: var(--bg-panel);
             z-index: 100;
         }
 
-        .brand { font-weight: 700; letter-spacing: -0.5px; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .brand { font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
         .brand span { color: var(--accent); }
+        .badge { font-size: 0.7em; background: var(--border); padding: 2px 6px; border-radius: 4px; color: var(--text-muted); }
 
-        .actions { display: flex; gap: 10px; }
+        .controls { display: flex; gap: 8px; }
 
-        button {
-            background: var(--bg-panel);
+        .btn {
+            background: transparent;
             border: 1px solid var(--border);
             color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 6px 12px;
+            border-radius: 6px;
             cursor: pointer;
-            font-family: var(--font-ui);
             font-size: 0.9rem;
-            transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
+        .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; box-shadow: 0 0 15px var(--accent-glow); }
+        .btn.primary:hover { transform: translateY(-1px); box-shadow: 0 0 20px var(--accent-glow); }
+        .btn-icon { padding: 6px; aspect-ratio: 1; }
+
+        /* --- Editor Toolbar --- */
+        .toolbar {
+            height: var(--toolbar-height);
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 8px;
+            padding: 0 10px;
+            gap: 5px;
+            overflow-x: auto;
         }
-
-        button:hover { border-color: var(--text-muted); background: #1a1a1a; }
-        
-        button.primary {
-            background: var(--accent);
-            color: #000;
-            border-color: var(--accent);
-            font-weight: 600;
-            box-shadow: 0 0 15px var(--accent-dim);
+        .tool-btn {
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1.1rem;
         }
-        button.primary:hover {
-            box-shadow: 0 0 25px rgba(0, 242, 255, 0.4);
-            transform: translateY(-1px);
-        }
+        .tool-btn:hover { color: var(--accent); background: rgba(255,255,255,0.05); }
+        .divider { width: 1px; height: 20px; background: var(--border); margin: 0 5px; }
 
         /* --- Workspace --- */
         .workspace {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* Default PC Split */
+            display: flex;
             flex: 1;
             overflow: hidden;
             position: relative;
         }
 
-        /* Editor Side */
-        .pane {
+        .editor-container, .preview-container {
+            flex: 1;
             display: flex;
             flex-direction: column;
+            min-width: 0;
             position: relative;
         }
 
-        .pane-header {
-            padding: 10px 20px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-            background: var(--bg-body);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        textarea#markdown-input {
+        #markdown-input {
             flex: 1;
-            background: var(--bg-body);
+            background: var(--bg-input);
             color: var(--text-main);
             border: none;
             resize: none;
             padding: 20px;
             font-family: var(--font-code);
-            font-size: 14px;
+            font-size: 15px;
             line-height: 1.6;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) var(--bg-body);
         }
 
-        /* Preview Side */
         .preview-container {
-            background: #222; /* Contrast for "paper" feel */
+            background: #181818; /* Dark backdrop for "paper" contrast */
+            border-left: 1px solid var(--border);
             overflow-y: auto;
+            align-items: center;
             padding: 40px;
-            display: flex;
-            justify-content: center;
-            scrollbar-width: thin;
-            scrollbar-color: var(--border) #222;
         }
+        
+        [data-theme="paper"] .preview-container { background: #e5e5e5; }
 
-        /* The "Paper" */
+        /* Paper Render */
         #preview-render {
             background: white;
-            color: #333; /* Always dark text on paper */
-            width: 210mm; /* A4 width */
+            color: #333;
+            width: 210mm;
             min-height: 297mm;
             padding: 20mm;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             font-family: var(--font-doc);
-            font-size: 11pt; /* Print standard */
+            font-size: 11pt;
             line-height: 1.6;
         }
 
-        /* Mobile View Toggle Logic */
-        .mobile-tabs { display: none; }
-
-        /* Settings Modal (Overlay) */
-        .settings-overlay {
-            position: absolute;
-            top: 0; right: -400px;
-            width: 350px;
-            height: 100%;
-            background: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(20px);
-            border-left: 1px solid var(--border);
-            transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 200;
+        /* --- Status Bar --- */
+        .status-bar {
+            height: var(--stat-height);
+            background: var(--bg-panel);
+            border-top: 1px solid var(--border);
             display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-        }
-
-        .settings-overlay.open { right: 0; }
-
-        .settings-title {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
+        .stats-group { display: flex; gap: 15px; }
 
-        .setting-group { margin-bottom: 20px; }
-        .setting-label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-muted); }
+        /* --- Overlays & Modals --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+            z-index: 200; display: none; justify-content: center; align-items: center;
+        }
+        .overlay.active { display: flex; }
         
-        textarea.css-editor {
-            width: 100%;
-            height: 150px;
-            background: #000;
+        .modal {
+            background: var(--bg-panel);
             border: 1px solid var(--border);
-            color: #a5f3fc;
-            font-family: var(--font-code);
-            font-size: 12px;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 25px;
+            border-radius: 12px;
+            width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-
-        /* --- PDF Generation CSS (Applied to the rendered HTML) --- */
-        /* Note: Styles inside #preview-render will be controlled by user CSS too */
-        #preview-render h1, #preview-render h2, #preview-render h3 {
-            font-family: 'Inter', sans-serif;
-            color: #111;
-            margin-top: 1.5em;
-            margin-bottom: 0.5em;
+        .modal h2 { margin-top: 0; color: var(--text-main); }
+        
+        .option-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .theme-card {
+            border: 1px solid var(--border); padding: 10px; border-radius: 6px;
+            text-align: center; cursor: pointer; transition: 0.2s;
         }
-        #preview-render h1 { border-bottom: 2px solid #000; padding-bottom: 10px; }
-        #preview-render pre { background: #f4f4f4; padding: 10px; border-radius: 4px; border: 1px solid #ddd; overflow-x: hidden; white-space: pre-wrap; }
-        #preview-render code { font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 3px; font-size: 0.9em; }
-        #preview-render pre code { background: none; padding: 0; color: #333; }
-        #preview-render blockquote { border-left: 4px solid var(--accent); margin: 0; padding-left: 15px; color: #555; font-style: italic; }
-        #preview-render img { max-width: 100%; height: auto; display: block; margin: 20px auto; }
-        #preview-render table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        #preview-render th, #preview-render td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        #preview-render th { background-color: #f2f2f2; }
+        .theme-card:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* --- Responsive Design --- */
+        /* --- Preview Markdown Styles --- */
+        #preview-render h1, #preview-render h2 { border-bottom: 2px solid #000; padding-bottom: 0.3em; margin-top: 1.5em; }
+        #preview-render code { background: rgba(0,0,0,0.05); padding: 2px 4px; border-radius: 3px; font-family: 'JetBrains Mono'; }
+        #preview-render pre { background: #f5f5f5; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        #preview-render blockquote { border-left: 4px solid var(--accent); padding-left: 15px; margin: 1em 0; color: #555; font-style: italic; }
+        #preview-render img { max-width: 100%; display: block; margin: 10px auto; }
+        #preview-render table { width: 100%; border-collapse: collapse; margin: 1em 0; }
+        #preview-render th, #preview-render td { border: 1px solid #ddd; padding: 8px; }
+        #preview-render th { background: #eee; }
+
+        /* --- Zen Mode --- */
+        body.zen-mode header, body.zen-mode .status-bar, body.zen-mode .toolbar { display: none; }
+        body.zen-mode .workspace { position: fixed; top: 0; bottom: 0; left: 0; right: 0; z-index: 999; }
+        
+        /* Mobile */
         @media (max-width: 900px) {
-            .workspace { grid-template-columns: 1fr; }
-            .preview-container { display: none; } /* Hidden by default on mobile */
-            
-            .mobile-tabs {
-                display: flex;
-                position: fixed;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: rgba(30,30,30,0.9);
-                border: 1px solid var(--border);
-                border-radius: 50px;
-                padding: 5px;
-                gap: 5px;
-                z-index: 150;
-                backdrop-filter: blur(10px);
-                box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-            }
-            
-            .tab-btn {
-                padding: 10px 20px;
-                border-radius: 40px;
-                background: transparent;
-                border: none;
-                color: var(--text-muted);
-                font-weight: 600;
-            }
-            
-            .tab-btn.active { background: var(--text-main); color: #000; }
-
-            /* Mobile States */
-            body.show-preview .pane { display: none; }
-            body.show-preview .preview-container { display: flex; padding: 20px; background: #111; }
-            body.show-preview #preview-render { width: 100%; padding: 15mm; min-height: auto; box-shadow: none; }
-            
-            .brand span:last-child { display: none; } /* Hide text logo on small screens */
-            
-            .settings-overlay { width: 100%; right: -100%; }
+            .workspace { flex-direction: column; }
+            .preview-container.mobile-hidden { display: none; }
+            .editor-container.mobile-hidden { display: none; }
+            .mobile-tabs { display: flex; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #222; border-radius: 30px; padding: 5px; z-index: 300; border: 1px solid #444; }
+            .tab-btn { background: transparent; border: none; padding: 10px 20px; color: #888; border-radius: 20px; }
+            .tab-btn.active { background: var(--accent); color: #000; font-weight: bold; }
         }
+        .mobile-tabs { display: none; }
     </style>
 </head>
-<body>
+<body data-theme="cyber">
 
     <header>
         <div class="brand">
-            <i class="ph-file-code" style="font-size: 24px; color: var(--accent);"></i>
-            <span>MD.Flow</span>
+            <i class="ph-hexagon-fill" style="color: var(--accent);"></i>
+            MD.Flow <span class="badge">v2.0</span>
         </div>
-        <div class="actions">
-            <button onclick="toggleSettings()"><i class="ph-sliders"></i> <span class="desktop-only">Design</span></button>
-            <button class="primary" onclick="generatePDF()"><i class="ph-download-simple"></i> <span class="desktop-only">Export PDF</span></button>
+        <div class="controls">
+            <button class="btn" onclick="toggleZen()" title="Zen Mode (Focus)"><i class="ph-corners-out"></i></button>
+            <button class="btn" onclick="openSettings()" title="Settings"><i class="ph-gear"></i></button>
+            <button class="btn primary" onclick="exportPDF()">Export PDF</button>
+            <div class="dropdown" style="position:relative">
+                <button class="btn btn-icon" onclick="downloadMD()" title="Download .md"><i class="ph-download"></i></button>
+            </div>
         </div>
     </header>
 
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button class="tool-btn" onclick="insert('**', '**')" title="Bold"><i class="ph-text-b"></i></button>
+        <button class="tool-btn" onclick="insert('*', '*')" title="Italic"><i class="ph-text-italic"></i></button>
+        <button class="tool-btn" onclick="insert('~~', '~~')" title="Strikethrough"><i class="ph-text-strikethrough"></i></button>
+        <div class="divider"></div>
+        <button class="tool-btn" onclick="insert('# ', '')" title="H1"><i class="ph-text-h-one"></i></button>
+        <button class="tool-btn" onclick="insert('## ', '')" title="H2"><i class="ph-text-h-two"></i></button>
+        <button class="tool-btn" onclick="insert('### ', '')" title="H3"><i class="ph-text-h-three"></i></button>
+        <div class="divider"></div>
+        <button class="tool-btn" onclick="insert('`', '`')" title="Inline Code"><i class="ph-code"></i></button>
+        <button class="tool-btn" onclick="insert('\n```\n', '\n```\n')" title="Code Block"><i class="ph-code-block"></i></button>
+        <button class="tool-btn" onclick="insert('> ', '')" title="Quote"><i class="ph-quotes"></i></button>
+        <div class="divider"></div>
+        <button class="tool-btn" onclick="insert('[', '](url)')" title="Link"><i class="ph-link"></i></button>
+        <button class="tool-btn" onclick="insert('![alt]', '(url)')" title="Image"><i class="ph-image"></i></button>
+        <button class="tool-btn" onclick="insert('\n| H1 | H2 |\n|---|---|\n| 1 | 2 |', '')" title="Table"><i class="ph-table"></i></button>
+    </div>
+
     <div class="workspace">
-        <!-- Input Area -->
-        <div class="pane" id="editor-pane">
-            <div class="pane-header">
-                <span>Markdown Input</span>
-                <label for="file-upload" style="cursor: pointer; color: var(--accent);"><i class="ph-upload-simple"></i> Datei laden</label>
-                <input type="file" id="file-upload" accept=".md,.txt" style="display: none;" onchange="loadFile(this)">
-            </div>
-            <textarea id="markdown-input" spellcheck="false" placeholder="# Schreib hier dein Meisterwerk..."></textarea>
+        <!-- Editor -->
+        <div class="editor-container" id="editor-box">
+            <textarea id="markdown-input" placeholder="Type your masterpiece..." spellcheck="false"></textarea>
         </div>
 
-        <!-- Preview Area -->
-        <div class="preview-container" id="preview-pane">
+        <!-- Preview -->
+        <div class="preview-container mobile-hidden" id="preview-box">
             <div id="preview-render"></div>
         </div>
     </div>
 
-    <!-- Mobile Navigation -->
+    <!-- Mobile Tabs -->
     <div class="mobile-tabs">
         <button class="tab-btn active" onclick="switchTab('editor')">Editor</button>
         <button class="tab-btn" onclick="switchTab('preview')">Preview</button>
     </div>
 
-    <!-- Settings Drawer -->
-    <div class="settings-overlay" id="settings-drawer">
-        <div class="settings-title">
-            Style Config
-            <i class="ph-x" style="cursor: pointer;" onclick="toggleSettings()"></i>
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="stats-group">
+            <span id="stat-words">0 words</span>
+            <span id="stat-chars">0 chars</span>
         </div>
-        
-        <div class="setting-group">
-            <span class="setting-label">Seitenränder (mm)</span>
-            <input type="number" id="margin-set" value="20" style="background:#222; border:1px solid #333; color:white; padding:5px; border-radius:4px; width:100%;">
+        <div class="stats-group">
+            <span id="save-status"><i class="ph-check"></i> Saved</span>
         </div>
-
-        <div class="setting-group">
-            <span class="setting-label">Custom CSS (Wirkt nur auf PDF/Preview)</span>
-            <textarea id="custom-css" class="css-editor" spellcheck="false">
-/* Beispiel: Blaue Überschriften */
-h1 { 
-  color: #0044cc !important; 
-  text-transform: uppercase;
-}
-/* Font anpassen */
-body {
-  font-family: 'Merriweather', serif;
-}
-</textarea>
-        </div>
-        
-        <button onclick="updateStyles()" style="width:100%; justify-content:center; margin-top: 10px;">Apply Styles</button>
     </div>
 
-    <!-- Dynamic Style Tag for User CSS -->
-    <style id="user-style-injection"></style>
+    <!-- Settings Modal -->
+    <div class="overlay" id="settings-modal" onclick="if(event.target === this) closeSettings()">
+        <div class="modal">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2>Settings</h2>
+                <i class="ph-x" style="cursor:pointer; font-size:1.2rem;" onclick="closeSettings()"></i>
+            </div>
+            
+            <label>Interface Theme</label>
+            <div class="option-grid">
+                <div class="theme-card" onclick="setTheme('cyber')">Cyber</div>
+                <div class="theme-card" onclick="setTheme('nord')">Nord</div>
+                <div class="theme-card" onclick="setTheme('paper')">Paper</div>
+            </div>
+
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn primary" onclick="downloadHTML()">Export as HTML</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // --- Init & Configuration ---
-        const inputArea = document.getElementById('markdown-input');
-        const previewArea = document.getElementById('preview-render');
-        const userStyleTag = document.getElementById('user-style-injection');
+        // --- Core ---
+        const input = document.getElementById('markdown-input');
+        const preview = document.getElementById('preview-render');
+        const defaultMD = "# Welcome to MD.Flow Suite\n\nWrite **beautiful** documents with ease.\n\n- [x] Auto-save enabled\n- [x] PDF Export\n- [x] Multi-theme support";
 
-        // Initial Demo Text
-        const defaultText = `# Hallo Welt!
-Dies ist **MD.Flow**. Der Markdown Editor, der nicht nervt.
+        // --- Init ---
+        function init() {
+            // Load saved content
+            const saved = localStorage.getItem('mdflow_content');
+            input.value = saved ? saved : defaultMD;
+            
+            // Load theme
+            const savedTheme = localStorage.getItem('mdflow_theme') || 'cyber';
+            setTheme(savedTheme);
 
-## Features
-- [x] Live Preview
-- [x] Mobile Optimized
-- [x] Custom CSS Injection
-- [x] Client-side PDF Generation
+            render();
+        }
 
-> "Design is intelligence made visible."
-
-### Code Beispiel
-\`\`\`javascript
-const outstanding = true;
-if (outstanding) {
-    console.log("Das ist Webdesign!");
-}
-\`\`\`
-
-| Feature | Status |
-| :--- | :--- |
-| UI | Clean |
-| UX | Smooth |
-`;
-        
-        inputArea.value = defaultText;
-
-        // --- Markdown Parsing Logic ---
-        marked.setOptions({
-            highlight: function(code, lang) {
-                const language = highlight.getLanguage(lang) ? lang : 'plaintext';
-                return highlight.highlight(code, { language }).value;
-            },
-            breaks: true
-        });
-
+        // --- Render Engine ---
         function render() {
-            const md = inputArea.value;
-            previewArea.innerHTML = marked.parse(md);
+            const md = input.value;
+            
+            // Render MD
+            preview.innerHTML = marked.parse(md);
+            
+            // Syntax Highlight
+            document.querySelectorAll('pre code').forEach((el) => {
+                hljs.highlightElement(el);
+            });
+
+            // Update Stats
+            updateStats(md);
+            
+            // Auto Save
+            localStorage.setItem('mdflow_content', md);
+            showSaved();
         }
 
-        // Live Rendering Event
-        inputArea.addEventListener('input', render);
-        
-        // --- Settings & CSS ---
-        function toggleSettings() {
-            document.getElementById('settings-drawer').classList.toggle('open');
+        // --- Stats ---
+        function updateStats(text) {
+            const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+            const chars = text.length;
+            document.getElementById('stat-words').innerText = `${words} words`;
+            document.getElementById('stat-chars').innerText = `${chars} chars`;
         }
 
-        function updateStyles() {
-            const customCSS = document.getElementById('custom-css').value;
-            // Wir wrappen das CSS in #preview-render, damit es nicht die UI kaputt macht
-            // Aber für PDF brauchen wir es globaler... Trick:
-            // Wir ersetzen 'body' im CSS String durch '#preview-render' für die Vorschau
-            let previewCSS = customCSS.replace(/body/g, '#preview-render');
-            userStyleTag.innerHTML = previewCSS;
-            toggleSettings();
+        function showSaved() {
+            const el = document.getElementById('save-status');
+            el.style.opacity = '1';
+            setTimeout(() => el.style.opacity = '0.5', 1000);
         }
 
-        // --- File Upload ---
-        function loadFile(input) {
-            const file = input.files[0];
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                inputArea.value = e.target.result;
-                render();
+        // --- Editor Tools ---
+        function insert(before, after) {
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            const selection = text.substring(start, end);
+            
+            const newText = text.substring(0, start) + before + selection + after + text.substring(end);
+            
+            input.value = newText;
+            render();
+            input.focus();
+            input.setSelectionRange(start + before.length, end + before.length);
+        }
+
+        input.addEventListener('input', render);
+
+        // --- Features ---
+        function toggleZen() {
+            document.body.classList.toggle('zen-mode');
+        }
+
+        function setTheme(theme) {
+            document.body.setAttribute('data-theme', theme);
+            localStorage.setItem('mdflow_theme', theme);
+            
+            // Adjust Highlight.js theme if needed (simplified here)
+        }
+
+        function openSettings() { document.getElementById('settings-modal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.remove('active'); }
+
+        // --- Export ---
+        function exportPDF() {
+            const element = document.getElementById('preview-render');
+            const opt = {
+                margin: 20,
+                filename: 'document.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            reader.readAsText(file);
+            html2pdf().set(opt).from(element).save();
         }
 
-        // --- Mobile Logic ---
+        function downloadMD() {
+            const blob = new Blob([input.value], {type: 'text/markdown'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'document.md';
+            a.click();
+        }
+
+        function downloadHTML() {
+            const html = `<!DOCTYPE html><html><body style="max-width:800px;margin:0 auto;padding:20px;font-family:sans-serif;">${preview.innerHTML}</body></html>`;
+            const blob = new Blob([html], {type: 'text/html'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'document.html';
+            a.click();
+        }
+
+        // --- Mobile Tabs ---
         function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            const ed = document.getElementById('editor-box');
+            const pr = document.getElementById('preview-box');
+            const btns = document.querySelectorAll('.tab-btn');
+            
+            btns.forEach(b => b.classList.remove('active'));
+            
             if (tab === 'editor') {
-                document.body.classList.remove('show-preview');
-                document.querySelector('button[onclick="switchTab(\'editor\')"]').classList.add('active');
+                ed.classList.remove('mobile-hidden');
+                pr.classList.add('mobile-hidden');
+                btns[0].classList.add('active');
             } else {
-                document.body.classList.add('show-preview');
-                document.querySelector('button[onclick="switchTab(\'preview\')"]').classList.add('active');
+                ed.classList.add('mobile-hidden');
+                pr.classList.remove('mobile-hidden');
+                btns[1].classList.add('active');
             }
         }
 
-        // --- PDF Generation ---
-        function generatePDF() {
-            const element = document.getElementById('preview-render');
-            const margin = document.getElementById('margin-set').value;
-            
-            // Temporäres Styling für den Print-Prozess um Hintergrundfarben sicherzustellen
-            const opt = {
-                margin:       parseInt(margin),
-                filename:     'md-flow-document.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true }, 
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // Button Feedback
-            const btn = document.querySelector('button.primary');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="ph-spinner ph-spin"></i> Rendering...';
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                btn.innerHTML = originalText;
-            });
-        }
-
-        // Initial Render
-        render();
-        updateStyles();
-
+        // Run
+        init();
     </script>
 </body>
 </html>
