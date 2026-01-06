@@ -9,7 +9,7 @@ const fileInput = document.getElementById('file-upload-input');
 const uploadZone = document.getElementById('upload-zone');
 const cssImportInput = document.getElementById('css-import-input');
 
-const defaultMD = `# Welcome to MD.Flow Suite 🚀
+const defaultMD = `# Welcome to Markdown.Flow 🚀
 The **ultimate markup environment** for power users and beginners alike.
 
 ## Features
@@ -23,7 +23,7 @@ The **ultimate markup environment** for power users and beginners alike.
 ## Quick Start
 
 1. Start typing in the editor
-2. Use the toolbar for formatting
+2. Use the toolbar for formatting and page breaks!
 3. Click **Styles** to customize the document appearance
 4. Export your finished document
 
@@ -45,11 +45,11 @@ console.log(greet('World'));
 | CSS Editor | ✅ | Full customization |
 | File Upload | ✅ | Drag & drop support |
 
-> **Pro Tip:** Press the **Styles** button to customize your document's typography, colors, and spacing!
+> **Pro Tip:** Press the **Styles** button to customize your document's typography, colors, page breaks and spacing!
 
 ---
 
-Made with ❤️ by MD.Flow Suite`;
+Made with ❤️ by Lorenzo Bay-Müller `;
 
 // --- State ---
 let currentFileName = 'Untitled';
